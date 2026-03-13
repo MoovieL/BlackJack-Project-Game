@@ -5,6 +5,15 @@
 $(document).ready(function () {
 
     // ---------------------------------------------------------------
+    // BACK TO LOBBY
+    // ---------------------------------------------------------------
+    $('#btn-back-lobby').on('click', function () {
+        if (typeof window.backToLobby === 'function') {
+            window.backToLobby();
+        }
+    });
+
+    // ---------------------------------------------------------------
     // CONFIG & STATE
     // ---------------------------------------------------------------
     const SUITS = ['hearts', 'diamonds', 'clubs', 'spades'];
