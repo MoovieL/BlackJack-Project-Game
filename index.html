@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlackJack Royal - Jeu Immersif</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Montserrat:wght@300;400;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Ambient particles -->
+<div id="particles"></div>
+
+<!-- Main Game Container -->
+<div id="game-container">
+
+    <!-- Top Bar -->
+    <header id="top-bar">
+        <div class="logo">
+            <span class="logo-icon">&#9824;</span>
+            <span class="logo-text">BlackJack <span class="gold">Royal</span></span>
+        </div>
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-label">Mains jouées</span>
+                <span class="stat-value" id="hands-played">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Victoires</span>
+                <span class="stat-value" id="wins-count">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Record</span>
+                <span class="stat-value" id="max-balance">1000</span>
+            </div>
+        </div>
+        <button id="settings-btn" title="Paramètres">&#9881;</button>
+    </header>
+
+    <!-- Dealer Area -->
+    <div id="dealer-area">
+        <div id="dealer-avatar">
+            <svg id="dealer-svg" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+                <!-- Dealer body -->
+                <defs>
+                    <linearGradient id="suit-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#2c2c2c"/>
+                        <stop offset="100%" style="stop-color:#1a1a1a"/>
+                    </linearGradient>
+                    <linearGradient id="skin-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#f4c89a"/>
+                        <stop offset="100%" style="stop-color:#e8b078"/>
+                    </linearGradient>
+                    <linearGradient id="hair-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#3a3a3a"/>
+                        <stop offset="100%" style="stop-color:#1a1a1a"/>
+                    </linearGradient>
+                </defs>
+                <!-- Body/Suit -->
+                <path d="M30,140 L30,105 Q30,85 60,80 Q90,85 90,105 L90,140" fill="url(#suit-grad)"/>
+                <!-- Shirt/collar -->
+                <path d="M48,95 L60,105 L72,95" fill="none" stroke="#fff" stroke-width="1.5"/>
+                <line x1="60" y1="105" x2="60" y2="140" stroke="#c8a45c" stroke-width="1.5"/>
+                <!-- Bowtie -->
+                <path d="M52,95 L60,99 L68,95 L60,92 Z" fill="#8b0000"/>
+                <!-- Neck -->
+                <rect x="52" y="75" width="16" height="15" rx="5" fill="url(#skin-grad)"/>
+                <!-- Head -->
+                <ellipse cx="60" cy="55" rx="25" ry="28" fill="url(#skin-grad)"/>
+                <!-- Hair -->
+                <path d="M35,48 Q35,25 60,25 Q85,25 85,48 L85,42 Q85,22 60,22 Q35,22 35,42 Z" fill="url(#hair-grad)"/>
+                <!-- Side hair -->
+                <path d="M35,48 Q33,55 35,60" fill="url(#hair-grad)" stroke="url(#hair-grad)" stroke-width="3"/>
+                <path d="M85,48 Q87,55 85,60" fill="url(#hair-grad)" stroke="url(#hair-grad)" stroke-width="3"/>
+                <!-- Eyes -->
+                <ellipse class="dealer-eye" cx="50" cy="52" rx="3.5" ry="4" fill="#2c2c2c"/>
+                <ellipse class="dealer-eye" cx="70" cy="52" rx="3.5" ry="4" fill="#2c2c2c"/>
+                <ellipse cx="49" cy="51" rx="1.2" ry="1.5" fill="#fff" opacity="0.7"/>
+                <ellipse cx="69" cy="51" rx="1.2" ry="1.5" fill="#fff" opacity="0.7"/>
+                <!-- Eyebrows -->
+                <path class="dealer-brow" d="M44,45 Q50,42 56,45" fill="none" stroke="#2c2c2c" stroke-width="2" stroke-linecap="round"/>
+                <path class="dealer-brow" d="M64,45 Q70,42 76,45" fill="none" stroke="#2c2c2c" stroke-width="2" stroke-linecap="round"/>
+                <!-- Nose -->
+                <path d="M58,58 Q60,62 62,58" fill="none" stroke="#d4a574" stroke-width="1.5" stroke-linecap="round"/>
+                <!-- Mouth -->
+                <path id="dealer-mouth" d="M50,68 Q60,74 70,68" fill="none" stroke="#c0705a" stroke-width="2" stroke-linecap="round"/>
+                <!-- Ears -->
+                <ellipse cx="35" cy="55" rx="4" ry="6" fill="url(#skin-grad)"/>
+                <ellipse cx="85" cy="55" rx="4" ry="6" fill="url(#skin-grad)"/>
+            </svg>
+            <div id="dealer-speech" class="hidden">
+                <span id="dealer-text">Bienvenue à la table !</span>
+            </div>
+        </div>
+        <div id="dealer-info">
+            <span class="label">CROUPIER</span>
+            <span class="score" id="dealer-score"></span>
+        </div>
+        <div id="dealer-cards" class="card-row"></div>
+    </div>
+
+    <!-- Center / Table felt -->
+    <div id="table-center">
+        <div id="game-message" class="hidden"></div>
+        <div id="side-bets-display" class="hidden">
+            <div id="twentyone-plus-three-result" class="side-bet-result"></div>
+            <div id="pairs-result" class="side-bet-result"></div>
+        </div>
+    </div>
+
+    <!-- Player Area -->
+    <div id="player-area">
+        <div id="player-hands-container">
+            <div class="player-hand" data-hand="0">
+                <div id="player-info-0" class="player-info">
+                    <span class="label">JOUEUR</span>
+                    <span class="score" id="player-score-0"></span>
+                </div>
+                <div id="player-cards-0" class="card-row"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Betting Area -->
+    <div id="betting-area">
+        <!-- Side bets -->
+        <div id="side-bets-section">
+            <div class="side-bet-box" id="bet-21-3">
+                <div class="side-bet-label">21+3</div>
+                <div class="side-bet-amount" id="bet-21-3-amount">0</div>
+                <div class="side-bet-controls">
+                    <button class="side-bet-btn minus" data-bet="21+3" data-action="minus">−</button>
+                    <button class="side-bet-btn plus" data-bet="21+3" data-action="plus">+</button>
+                </div>
+            </div>
+            <div class="side-bet-box" id="bet-pairs">
+                <div class="side-bet-label">PAIRS</div>
+                <div class="side-bet-amount" id="bet-pairs-amount">0</div>
+                <div class="side-bet-controls">
+                    <button class="side-bet-btn minus" data-bet="pairs" data-action="minus">−</button>
+                    <button class="side-bet-btn plus" data-bet="pairs" data-action="plus">+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main bet -->
+        <div id="main-bet-section">
+            <div id="balance-display">
+                <span class="balance-label">SOLDE</span>
+                <span class="balance-amount" id="balance">1000</span>
+                <span class="balance-currency">€</span>
+            </div>
+            <div id="bet-controls">
+                <div id="chip-selector">
+                    <button class="chip" data-value="1"><span class="chip-inner">1</span></button>
+                    <button class="chip" data-value="5"><span class="chip-inner">5</span></button>
+                    <button class="chip" data-value="10"><span class="chip-inner">10</span></button>
+                    <button class="chip" data-value="25"><span class="chip-inner">25</span></button>
+                    <button class="chip" data-value="50"><span class="chip-inner">50</span></button>
+                    <button class="chip" data-value="100"><span class="chip-inner">100</span></button>
+                </div>
+                <div id="bet-display">
+                    <span class="bet-label">MISE</span>
+                    <span class="bet-amount" id="current-bet">0</span>
+                    <span class="bet-currency">€</span>
+                </div>
+                <div id="bet-actions">
+                    <button id="btn-clear-bet" class="bet-action-btn">Effacer</button>
+                    <button id="btn-deal" class="bet-action-btn primary" disabled>DISTRIBUER</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div id="action-buttons" class="hidden">
+        <button id="btn-hit" class="action-btn hit-btn">
+            <span class="action-icon">&#9899;</span>
+            <span>TIRER</span>
+        </button>
+        <button id="btn-stand" class="action-btn stand-btn">
+            <span class="action-icon">&#9632;</span>
+            <span>RESTER</span>
+        </button>
+        <button id="btn-double" class="action-btn double-btn">
+            <span class="action-icon">&times;2</span>
+            <span>DOUBLER</span>
+        </button>
+        <button id="btn-split" class="action-btn split-btn hidden">
+            <span class="action-icon">&#8644;</span>
+            <span>SPLIT</span>
+        </button>
+        <button id="btn-insurance" class="action-btn insurance-btn hidden">
+            <span class="action-icon">&#9878;</span>
+            <span>ASSURANCE</span>
+        </button>
+    </div>
+
+    <!-- New Round Button -->
+    <div id="new-round-area" class="hidden">
+        <button id="btn-new-round" class="action-btn new-round-btn">
+            <span>NOUVELLE MANCHE</span>
+        </button>
+    </div>
+
+</div>
+
+<!-- Settings Modal -->
+<div id="settings-modal" class="modal hidden">
+    <div class="modal-content">
+        <h2>Paramètres</h2>
+        <div class="setting-row">
+            <label>Nombre de jeux de cartes</label>
+            <select id="setting-decks">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="4">4</option>
+                <option value="6" selected>6</option>
+                <option value="8">8</option>
+            </select>
+        </div>
+        <div class="setting-row">
+            <label>Vitesse d'animation</label>
+            <select id="setting-speed">
+                <option value="fast">Rapide</option>
+                <option value="normal" selected>Normale</option>
+                <option value="slow">Lente</option>
+            </select>
+        </div>
+        <div class="setting-row">
+            <label>Sons</label>
+            <input type="checkbox" id="setting-sound" checked>
+        </div>
+        <div class="setting-row">
+            <label>Réinitialiser le solde</label>
+            <button id="btn-reset-balance" class="bet-action-btn">Reset à 1000€</button>
+        </div>
+        <button id="btn-close-settings" class="bet-action-btn primary">Fermer</button>
+    </div>
+</div>
+
+<!-- Insurance Modal -->
+<div id="insurance-modal" class="modal hidden">
+    <div class="modal-content">
+        <h2>Assurance</h2>
+        <p>Le croupier montre un As. Souhaitez-vous prendre une assurance ?</p>
+        <p class="insurance-cost">Coût : <span id="insurance-cost-value">0</span>€ (paie 2:1)</p>
+        <div class="modal-actions">
+            <button id="btn-take-insurance" class="action-btn hit-btn">Oui</button>
+            <button id="btn-decline-insurance" class="action-btn stand-btn">Non</button>
+        </div>
+    </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
